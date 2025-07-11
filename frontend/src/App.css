@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+.dropdownCamera {
+  margin-top: 2rem;
+}
+
+button {
+  background-color: blue;
+  color: white;
+  margin-top: 10rem;
+}
