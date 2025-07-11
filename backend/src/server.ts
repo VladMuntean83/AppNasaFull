@@ -48,13 +48,12 @@ router.get(`/rovers/${roverName}/photos/${camera}`, async (req: any, res: any) =
             const resp = await axios.get(
                 `https://api.nasa.gov/mars-photos/api/v1/rovers/${roverName}/photos` + roverCameraParams
             );
-            // res.json(resp.data);
 
             const photoList: Photo[] = [];
             for (const photoResponse of resp.data["photos"])
                 photoList.push(new Photo(photoResponse));
 
-            res.json({ rovers: photoList });
+            res.json({ photos: photoList.map(photo => (photo.imageSource)) });
 
         } catch (e) {
             res.status(500).json({'Something went wrong': e});
