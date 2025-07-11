@@ -1,0 +1,69 @@
+import express from "express";
+import axios from "axios";
+require("dotenv").config();
+import { Rover } from "./Rover";
+import {Photo} from "./Photo";
+import cors from "cors";
+
+
+const roverName = 'curiosity';
+const camera = 'fhaz';
+const sol = '1000';
+const roverCameraParams = `?sol=${sol}&camera=${camera}&api_key=${process.env.NASA_KEY}`;
+
+const app = express();
+const port = 8000;
+
+app.use(cors());
+const router = express.Router();
+
+// Send hello for debug
+router.get('/test', (req: any, res: any) => res.send('Hello Vlad !'));
+
+// Fetch rover data from NASA API
+router.get('/rovers', async (req: any, res: any) =>
+    {
+        try {
+
+            const resp = await axios.get(
+                `https://api.nasa.gov/mars-photos/api/v1/rovers?api_key=${process.env.NASA_KEY}`
+            );
+
+            const roverList: string[] = [];
+            for (const roverResponse of resp.data["rovers"])
+                roverList.push(new Rover(roverResponse).name);
+
+            res.json({ rovers: roverList.map(name => ({ value: name, label: name })) });
+
+        } catch (e) {
+            res.status(500).json({'Something went wrong': e});
+        }
+    }
+);
+
+// Fetch images by rover and camera name
+router.get(`/rovers/${roverName}/photos/${camera}`, async (req: any, res: any) =>
+    {
+        try {
+            const resp = await axios.get(
+                `https://api.nasa.gov/mars-photos/api/v1/rovers/${roverName}/photos` + roverCameraParams
+            );
+            // res.json(resp.data);
+
+            const photoList: Photo[] = [];
+            for (const photoResponse of resp.data["photos"])
+                photoList.push(new Photo(photoResponse));
+
+            res.json({ rovers: photoList });
+
+        } catch (e) {
+            res.status(500).json({'Something went wrong': e});
+        }
+    }
+);
+
+app.use('/', router);
+
+app.listen(port, () => {
+    console.log(`Test backend is running on port ${port}`);
+});
