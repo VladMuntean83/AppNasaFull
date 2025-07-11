@@ -53,7 +53,7 @@ router.get(`/rovers/${roverName}/photos/${camera}`, async (req: any, res: any) =
             for (const photoResponse of resp.data["photos"])
                 photoList.push(new Photo(photoResponse));
 
-            res.json({ rovers: photoList });
+            res.json({ photos: photoList.map(photo => (photo.imageSource)) });
 
         } catch (e) {
             res.status(500).json({'Something went wrong': e});

@@ -39,7 +39,7 @@ function DropdownRovers() {
                 }}
             />
 
-            <div className={"dropdownCamera"}>
+            <div className="dropdownCamera">
                 <DropdownCameras selectedRover={selectedRover} />
             </div>
         </>
@@ -47,14 +47,64 @@ function DropdownRovers() {
 }
 
 function DropdownCameras({ selectedRover }: { selectedRover: string | null }) {
+
+    const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
+
     return(
-        <Select options={selectedRover ? roverCameras[selectedRover] : []}  />
+        <>
+            <Select
+                options={selectedRover ? roverCameras[selectedRover] : []}
+                onChange={(option) => {
+                    if (option) {
+                        setSelectedCamera(option.value);
+                    }
+                }}
+            />
+
+            <SearchImages selectedCamera={selectedCamera} selectedRover={selectedRover} />
+        </>
+    );
+}
+
+// @ts-ignore
+function SearchImages({ selectedRover, selectedCamera }: { selectedRover: string | null, selectedCamera: string | null }) {
+    const [images, setImages] = useState<string[]>([]);
+
+    const fetchImages = async () => {
+        if (!selectedRover || !selectedCamera) return;
+
+        try {
+            const resp = await axios.get(
+                `http://localhost:8000/rovers/${selectedRover}/photos/${selectedCamera}`
+            );
+
+            // Get only the first 5
+            const firstFive = resp.data.photos.slice(0, 5);
+            setImages(firstFive);
+        } catch (error) {
+            console.error("Failed to fetch images:", error);
+        }
+    };
+
+    return (
+        <>
+            <div>
+                <button onClick={fetchImages}>Search</button>
+            </div>
+            <div>
+                {images.map((imgUrl) => (
+                    <img
+                        className="imageGallery"
+                        src={imgUrl}
+                        alt='Mars rover'
+                    />
+                ))}
+            </div>
+        </>
     );
 }
 
 function App() {
-
-
 
   return (
     <>
@@ -70,10 +120,6 @@ function App() {
 
         <div className="dropdownRover">
             <DropdownRovers />
-        </div>
-
-        <div>
-            <button>Press me</button>
         </div>
     </>
   )
